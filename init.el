@@ -84,12 +84,12 @@
 (use-package general
   :config
   (general-create-definer hann0t/leader-keys
-    :keymaps '(normal insert visual emacs)
+    :keymaps '(normal)
     :prefix "SPC"
     :global-prefix "SPC")
 
   (hann0t/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
+    "SPC"  '(counsel-git :which-key "telescope")
     "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package evil
@@ -114,6 +114,30 @@
   :after evil
   :config
   (evil-collection-init))
+
+;;(use-package hydra)
+;;
+;;(defhydra hydra-text-scale (:timeout 4)
+;;  "scale text"
+;;  ("j" text-scale-increase "in")
+;;  ("k" text-scale-decrease "out")
+;;  ("f" nil "finished" :exit t))
+;;
+;;(hann0t/leader-keys
+;;  "ts" '(hydra-text-scale/body :which-key "scale text"))
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  (setq projectile-project-search-path '(("~/Personal" . 1) ("~/Work" . 1)))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
