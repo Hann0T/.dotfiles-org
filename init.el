@@ -1,14 +1,3 @@
-(setq inhibit-startup-message t)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
-(set-fringe-mode 10)
-
-(menu-bar-mode -1)
-
-(set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 240)
-
-;; Init package sources
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
 			 ("org" . "https://orgmode.org/elpa/")
@@ -23,6 +12,72 @@
 
 (require 'use-package)
 (setq use-package-always-ensure t)
+
+(use-package all-the-icons)
+
+(setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+
+(setq inhibit-startup-message t)
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
+(set-fringe-mode 10)
+
+(menu-bar-mode -1)
+
+(add-to-list 'default-frame-alist '(alpha-background . 90))
+
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 15)))
+
+(column-number-mode)
+(global-display-line-numbers-mode t)
+
+;; disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+		term-mode-hook
+		eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 0.3))
+
+(use-package doom-themes
+  :init (load-theme 'doom-tokyo-night t))
+
+(set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 240)
+
+(use-package org)
+(setq org-ellipsis " ▾"
+      org-startup-folded 'content
+      org-cycle-separator-lines 2
+      org-fontify-quote-and-verse-blocks t)
+
+;; Indent org-mode buffers for readability
+(add-hook 'org-mode-hook #'org-indent-mode)
+
+;; Automatically tangle our Emacs.org config file when we save it
+(defun efs/org-babel-tangle-config ()
+  (when (string-equal (buffer-file-name)
+                      (expand-file-name "~/.config/emacs/Emacs.org"))
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+;; get tangled
+
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+
+(add-hook 'org-mode-hook 'org-indent-mode)
+(use-package org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 (use-package ivy
   :diminish
@@ -50,37 +105,6 @@
   :config
   (setq ivy-initial-inputs-alist nil))
 
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
-
-(column-number-mode)
-(global-display-line-numbers-mode t)
-
-;; disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-		term-mode-hook
-		eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 0.3))
-
-;; NOTE: The first time you load your configuration on a new machine, you'll
-;; need to run the following command interactively so that mode line icons
-;; display correctly:
-;;
-;; M-x all-the-icons-install-fonts
-
-(use-package all-the-icons)
-
-(use-package doom-themes
-  :init (load-theme 'doom-tokyo-night t))
-
 (use-package general
   :config
   (general-create-definer hann0t/leader-keys
@@ -90,6 +114,9 @@
 
   (hann0t/leader-keys
     "SPC"  '(counsel-git :which-key "telescope")
+    "."  '(counsel-find-file :which-key "find file")
+    "gg"  '(magit :which-key "magit")
+    "sd"  '(counsel-projectile-rg :which-key "telescope live grep")
     "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package evil
@@ -139,15 +166,6 @@
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(use-package magit)
+  ;; :custom
+  ;; (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
