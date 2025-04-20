@@ -79,6 +79,21 @@
 (use-package org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
+(use-package general
+  :config
+  (general-create-definer hann0t/leader-keys
+    :keymaps '(normal)
+    :prefix "SPC"
+    :global-prefix "SPC")
+
+  (hann0t/leader-keys
+    "SPC"  '(project-find-file :which-key "telescope")
+    "b"  '(counsel-ibuffer :which-key "list buffers")
+    "."  '(counsel-find-file :which-key "find file")
+    "gg"  '(magit :which-key "magit")
+    "sd"  '(project-find-regexp :which-key "project find regex")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
+
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
@@ -104,20 +119,6 @@
 	 ("C-r" . 'counsel-minibuffer-history))
   :config
   (setq ivy-initial-inputs-alist nil))
-
-(use-package general
-  :config
-  (general-create-definer hann0t/leader-keys
-    :keymaps '(normal)
-    :prefix "SPC"
-    :global-prefix "SPC")
-
-  (hann0t/leader-keys
-    "SPC"  '(counsel-git :which-key "telescope")
-    "."  '(counsel-find-file :which-key "find file")
-    "gg"  '(magit :which-key "magit")
-    "sd"  '(counsel-projectile-rg :which-key "telescope live grep")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package evil
   :init
@@ -153,18 +154,25 @@
 ;;(hann0t/leader-keys
 ;;  "ts" '(hydra-text-scale/body :which-key "scale text"))
 
-(use-package projectile
-  :diminish projectile-mode
-  :config (projectile-mode)
-  :custom ((projectile-completion-system 'ivy))
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :init
-  (setq projectile-project-search-path '(("~/Personal" . 1) ("~/Work" . 1)))
-  (setq projectile-switch-project-action #'projectile-dired))
+;;(use-package projectile
+;;  :diminish projectile-mode
+;;  :config (projectile-mode)
+;;  :custom ((projectile-completion-system 'ivy))
+;;  :bind-keymap
+;;  ("C-c p" . projectile-command-map)
+;;  :init
+;;  (setq projectile-project-search-path '(("~/Personal" . 1) ("~/Work" . 1)))
+;;  (setq projectile-switch-project-action #'projectile-dired))
 
-(use-package counsel-projectile
-  :config (counsel-projectile-mode))
+;;(use-package counsel-projectile
+;;  :config (counsel-projectile-mode))
+
+(use-package project
+    ;;:bind-keymap (
+    ;;    ("C-f" . project-switch-project))
+)
+;; try to bind C-f to project-switch-project
+;; try to create harpoon with project
 
 (use-package magit)
   ;; :custom
