@@ -36,12 +36,8 @@ the TRASH directory.
 #+begin_src emacs-lisp
 
   (setq inhibit-startup-message t)
-  (scroll-bar-mode -1)
-  (tool-bar-mode -1)
   (tooltip-mode -1)
   (set-fringe-mode 10)
-
-  (menu-bar-mode -1)
 
   (add-to-list 'default-frame-alist '(alpha-background . 90))
 
@@ -170,6 +166,8 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 #+end_src
 
 * General
+replace general with:
+https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#index-define_002dkeymap
 #+begin_src emacs-lisp
 
   (use-package general
@@ -181,8 +179,10 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 
     (hann0t/leader-keys
       "SPC"  '(project-find-file :which-key "telescope")
-      "b"  '(counsel-ibuffer :which-key "list buffers")
+      ","  '(counsel-ibuffer :which-key "list buffers")
       "."  '(counsel-find-file :which-key "find file")
+      "rn"  '(lsp-rename :which-key "lsp rename")
+      "rr"  '(lsp-find-references :which-key "lsp find references")
       "gg"  '(magit :which-key "magit")
       "sd"  '(project-find-regexp :which-key "project find regex")
       "tt" '(counsel-load-theme :which-key "choose theme")))
@@ -191,15 +191,22 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 
 * LSP
 #+begin_src emacs-lisp
-  (use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :init
-    (setq lsp-keymap-prefix "C-c l")
-    :config
-    (lsp-enable-which-key-integration t))
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :config
+  (lsp-enable-which-key-integration t)
+  :bind (("C-h" . lsp-ui-doc-glance)
+      ("C-SPC" . completion-at-point))
+)
 
-  (use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode))
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode))
+
+;; lsp and tsserver was making the jit-lock-function pretty slow
+;; https://www.reddit.com/r/emacs/comments/1bwe92d/comment/ky5jk31/
+(setq font-lock-maximum-decoration 2)
 #+end_src
 ** Typescript
 #+begin_src emacs-lisp
@@ -306,7 +313,7 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 #+begin_src emacs-lisp
 
   (use-package project
-      ;;:bind-keymap (
+      ;;:bind (
       ;;    ("C-f" . project-switch-project))
   )
   ;; try to bind C-f to project-switch-project
@@ -320,4 +327,25 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
      :custom
      (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
+#+end_src
+
+* Sane Defaults
+#+begin_src emacs-lisp
+
+  (delete-selection-mode 1)    ;; You can select text and delete it by typing.
+  (electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
+  (electric-pair-mode 1)       ;; Turns on automatic parens pairing
+  ;; The following prevents <> from auto-pairing when electric-pair-mode is on.
+  ;; Otherwise, org-tempo is broken when you try to <s TAB...
+  (add-hook 'org-mode-hook (lambda ()
+             (setq-local electric-pair-inhibit-predicate
+                     `(lambda (c)
+                    (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+  (global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
+  (global-display-line-numbers-mode 1) ;; Display line numbers
+  (global-visual-line-mode t)  ;; Enable truncated lines
+  (menu-bar-mode -1)           ;; Disable the menu bar 
+  (scroll-bar-mode -1)         ;; Disable the scroll bar
+  (tool-bar-mode -1)           ;; Disable the tool bar
+  (setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
 #+end_src
