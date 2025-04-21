@@ -15,27 +15,13 @@
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 
-(setq inhibit-startup-message t)
 (tooltip-mode -1)
+;; padding
 (set-fringe-mode 10)
 
 (add-to-list 'default-frame-alist '(alpha-background . 90))
 
-;; is making everything slow (see with the profiler)
-;;(use-package doom-modeline
-;;  :ensure t
-;;  :init (doom-modeline-mode 1)
-;;  :custom ((doom-modeline-height 15)))
-
-(column-number-mode)
-(global-display-line-numbers-mode t)
-(setq display-line-numbers 'relative)
-
-;; disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-		term-mode-hook
-		eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+;;(column-number-mode)
 
 (use-package which-key
   :init (which-key-mode)
@@ -49,7 +35,7 @@
 (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 240)
 
 (use-package dashboard
-  :ensure t 
+  :ensure t
   :init
   (setq initial-buffer-choice 'dashboard-open)
   (setq dashboard-set-heading-icons t)
@@ -62,11 +48,33 @@
                           (bookmarks . 3)
                           (projects . 3)
                           (registers . 3)))
-  :custom 
+  :custom
   (dashboard-modify-heading-icons '((recents . "file-text")
 				      (bookmarks . "book")))
   :config
   (dashboard-setup-startup-hook))
+
+;; Clean up the mode line
+(setq-default mode-line-format
+              '("%e" "  "
+                (:propertize
+                 ("" mode-line-mule-info mode-line-client mode-line-modified mode-line-remote))
+                mode-line-frame-identification
+                mode-line-buffer-identification
+                "   "
+                mode-line-position
+                mode-line-format-right-align
+                "  "
+                (project-mode-line project-mode-line-format)
+                " "
+                (vc-mode vc-mode)
+                "  "
+                ;;mode-line-modes
+                mode-line-misc-info
+                "  ")
+              project-mode-line t
+              mode-line-buffer-identification '(" %b")
+              mode-line-position-column-line-format '(" %l:%c"))
 
 (use-package org)
 (setq org-ellipsis " ▾"
@@ -88,31 +96,32 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 ;; get tangled
 
-(use-package org-tempo
-  :ensure nil
-  :demand t
-  :config
-  (dolist (item '(("sh" . "src sh")
-                  ("el" . "src emacs-lisp")
-                  ("li" . "src lisp")
-                  ("sc" . "src scheme")
-                  ("ts" . "src typescript")
-                  ("py" . "src python")
-                  ("yaml" . "src yaml")
-                  ("json" . "src json")
-                  ("einit" . "src emacs-lisp :tangle emacs/init.el")
-                  ("emodule" . "src emacs-lisp :tangle emacs/modules/dw-MODULE.el")))
-    (add-to-list 'org-structure-template-alist item)))
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (shell . t)))
+
+  (use-package org-tempo
+    :ensure nil
+    :demand t
+    :config
+    (dolist (item '(("sh" . "src sh")
+                    ("el" . "src emacs-lisp")
+                    ("li" . "src lisp")
+                    ("sc" . "src scheme")
+                    ("ts" . "src typescript")
+                    ("py" . "src python")
+                    ("yaml" . "src yaml")
+                    ("json" . "src json")
+                    ("einit" . "src emacs-lisp :tangle emacs/init.el")
+                    ("emodule" . "src emacs-lisp :tangle emacs/modules/dw-MODULE.el")))
+      (add-to-list 'org-structure-template-alist item)))
 
 (add-hook 'org-mode-hook 'org-indent-mode)
-  (use-package org-bullets)
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(use-package org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
-;; (use-package org-bullets
-;;   :after org
-;;   :hook (org-mode . org-bullets-mode)
-;;   :custom
-;;   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+(setq org-clock-sound "~/Music/sfx/bell-notification.wav")
 
 (use-package general
   :config
@@ -128,7 +137,7 @@
     "rn"  '(lsp-rename :which-key "lsp rename")
     "rr"  '(lsp-find-references :which-key "lsp find references")
     "gg"  '(magit :which-key "magit")
-    "sd"  '(project-find-regexp :which-key "project find regex")
+    "ps"  '(project-find-regexp :which-key "project find regex")
     "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package lsp-mode
@@ -138,6 +147,7 @@
   :config
   (lsp-enable-which-key-integration t)
   :bind (("C-h" . lsp-ui-doc-glance)
+      ("TAB" . completion-at-point)
       ("C-SPC" . completion-at-point))
 )
 
@@ -154,31 +164,23 @@
   :config
   (setq typescript-indent-level 2))
 
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)	
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
+(use-package php-mode
+    :mode "\\.php\\'"
+    :hook (php-mode . lsp-deferred)
+)
+
+(use-package dired
+  :ensure nil
+  :bind (:map dired-mode-map
+              ("b" . dired-up-directory))
   :config
-  (ivy-mode 1))
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
-	 ("C-x C-f" . counsel-find-file)
-	 :map minibuffer-local-map
-	 ("C-r" . 'counsel-minibuffer-history))
-  :config
-  (setq ivy-initial-inputs-alist nil))
+  (setq dired-listing-switches "-alv --group-directories-first"
+        ;;dired-omit-files "^\\.[^.].*"
+        dired-omit-verbose nil
+        dired-dwim-target 'dired-dwim-target-next
+        dired-hide-details-hide-symlink-targets nil
+        dired-kill-when-opening-new-dired-buffer t
+        delete-by-moving-to-trash t))
 
 (use-package evil
   :init
@@ -203,33 +205,9 @@
   :config
   (evil-collection-init))
 
-;;(use-package hydra)
-;;
-;;(defhydra hydra-text-scale (:timeout 4)
-;;  "scale text"
-;;  ("j" text-scale-increase "in")
-;;  ("k" text-scale-decrease "out")
-;;  ("f" nil "finished" :exit t))
-;;
-;;(hann0t/leader-keys
-;;  "ts" '(hydra-text-scale/body :which-key "scale text"))
-
-;;(use-package projectile
-;;  :diminish projectile-mode
-;;  :config (projectile-mode)
-;;  :custom ((projectile-completion-system 'ivy))
-;;  :bind-keymap
-;;  ("C-c p" . projectile-command-map)
-;;  :init
-;;  (setq projectile-project-search-path '(("~/Personal" . 1) ("~/Work" . 1)))
-;;  (setq projectile-switch-project-action #'projectile-dired))
-
-;;(use-package counsel-projectile
-;;  :config (counsel-projectile-mode))
-
 (use-package project
-    ;;:bind (
-    ;;    ("C-f" . project-switch-project))
+    ;; :bind (
+    ;;     ("C-f" . project-switch-project))
 )
 ;; try to bind C-f to project-switch-project
 ;; try to create harpoon with project
@@ -238,8 +216,49 @@
    :custom
    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
+;; Core settings
+(setq ;; Yes, this is Emacs
+      inhibit-startup-message t
+
+      ;; Make it easy to cycle through previous items in the mark ring
+      set-mark-command-repeat-pop t
+
+      ;; Don't warn on large files
+      large-file-warning-threshold nil
+
+      ;; Follow symlinks to VC-controlled files without warning
+      vc-follow-symlinks t
+
+      ;; Don't warn on advice
+      ad-redefinition-action 'accept
+
+      ;; Revert Dired and other buffers
+      global-auto-revert-non-file-buffers t
+
+      ;; Silence compiler warnings as they can be pretty disruptive
+      native-comp-async-report-warnings-errors nil)
+
+;; Core modes
+(repeat-mode 1)                ;; Enable repeating key maps
+(menu-bar-mode 0)              ;; Hide the menu bar
+(tool-bar-mode 0)              ;; Hide the tool bar
+(savehist-mode 1)              ;; Save minibuffer history
+(scroll-bar-mode 0)            ;; Hide the scroll bar
+(xterm-mouse-mode 1)           ;; Enable mouse events in terminal Emacs
+(display-time-mode 1)          ;; Display time in mode line / tab bar
+(fido-vertical-mode 1)         ;; Improved vertical minibuffer completions
+(column-number-mode 1)         ;; Show column number on mode line
+(tab-bar-history-mode 1)       ;; Remember previous tab window configurations
+(auto-save-visited-mode 1)     ;; Auto-save files at an interval
+(global-visual-line-mode 1)    ;; Visually wrap long lines in all buffers
+(global-auto-revert-mode 1)    ;; Refresh buffers with changed local files
+
+;; Tabs to spaces
+(setq-default indent-tabs-mode nil tab-width 2)
+
 (delete-selection-mode 1)    ;; You can select text and delete it by typing.
 (electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
+
 (electric-pair-mode 1)       ;; Turns on automatic parens pairing
 ;; The following prevents <> from auto-pairing when electric-pair-mode is on.
 ;; Otherwise, org-tempo is broken when you try to <s TAB...
@@ -247,10 +266,48 @@
            (setq-local electric-pair-inhibit-predicate
                    `(lambda (c)
                   (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
-(global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
-(global-display-line-numbers-mode 1) ;; Display line numbers
-(global-visual-line-mode t)  ;; Enable truncated lines
-(menu-bar-mode -1)           ;; Disable the menu bar 
-(scroll-bar-mode -1)         ;; Disable the scroll bar
-(tool-bar-mode -1)           ;; Disable the tool bar
+
 (setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
+
+;; Display line numbers in programming modes
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(setq display-line-numbers-mode 'relative)
+
+;; Make icomplete slightly more convenient
+(keymap-set icomplete-fido-mode-map "M-h" 'icomplete-fido-backward-updir)
+(keymap-set icomplete-fido-mode-map "TAB" 'icomplete-force-complete)
+
+;; Delete trailing whitespace before saving buffers
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+
+;; Match completion substrings that may be out of order
+(defun dw/override-fido-completion-styles ()
+  (setq-local completion-styles '(basic substring partial-completion emacs22)))
+(add-hook 'icomplete-minibuffer-setup-hook 'dw/override-fido-completion-styles)
+
+(setopt completions-detailed t
+        completions-format 'vertical
+        completion-auto-select t)
+
+(setopt tab-always-indent 'complete
+        completion-styles '(basic partial-completion substring flex)
+        completion-ignore-case t
+        read-buffer-completion-ignore-case t
+        read-file-name-completion-ignore-case t
+        completion-flex-nospace t
+        completion-show-help nil
+        completions-detailed t
+        completions-group t
+        completion-auto-help 'visible
+        completion-auto-select 'second-tab
+        completions-header-format nil
+        completions-format 'vertical  ;'one-column
+        completions-max-height 10)
+
+(keymap-set minibuffer-local-map "C-p" #'minibuffer-previous-completion)
+(keymap-set minibuffer-local-map "C-n" #'minibuffer-next-completion)
+
+;; Make sure ripgrep is used everywhere
+(setq xref-search-program 'ripgrep
+      grep-command "rg -nS --noheading")
