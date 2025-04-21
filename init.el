@@ -103,7 +103,7 @@
 
   (use-package org-tempo
     :ensure nil
-    :demand t
+    :demand t  ;; load at startup
     :config
     (dolist (item '(("sh" . "src sh")
                     ("el" . "src emacs-lisp")
@@ -117,8 +117,6 @@
                     ("emodule" . "src emacs-lisp :tangle emacs/modules/dw-MODULE.el")))
       (add-to-list 'org-structure-template-alist item)))
 
-(add-hook 'org-mode-hook 'org-indent-mode)
-(use-package org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 (setq org-clock-sound "~/Music/sfx/bell-notification.wav")
@@ -312,3 +310,12 @@
 ;; Make sure ripgrep is used everywhere
 (setq xref-search-program 'ripgrep
       grep-command "rg -nS --noheading")
+
+(defun efs/display-startup-time ()
+   (message "Emacs loaded in %s with %d garbage collections and %d features loaded."
+            (format "%.2f seconds"
+                    (float-time
+                      (time-subtract after-init-time before-init-time)))
+            gcs-done (length features)))
+
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
