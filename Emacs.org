@@ -21,18 +21,6 @@
 
 #+end_src
 
-* All the icons
-NOTE: The first time you load your configuration on a new machine, you'll
-need to run the following command interactively so that mode line icons
-display correctly:
-
-M-x all-the-icons-install-fonts
-#+begin_src emacs-lisp
-
-  (use-package all-the-icons)
-
-#+end_src
-
 * Backup
 By default, Emacs creates automatic backups of files in their original directories, such “file.el”
 and the backup “file.el~”.
@@ -57,13 +45,15 @@ the TRASH directory.
 
   (add-to-list 'default-frame-alist '(alpha-background . 90))
 
-  (use-package doom-modeline
-    :ensure t
-    :init (doom-modeline-mode 1)
-    :custom ((doom-modeline-height 15)))
+  ;; is making everything slow (see with the profiler)
+  ;;(use-package doom-modeline
+  ;;  :ensure t
+  ;;  :init (doom-modeline-mode 1)
+  ;;  :custom ((doom-modeline-height 15)))
 
   (column-number-mode)
   (global-display-line-numbers-mode t)
+  (setq display-line-numbers 'relative)
 
   ;; disable line numbers for some modes
   (dolist (mode '(org-mode-hook
@@ -89,6 +79,30 @@ the TRASH directory.
 
 #+end_src
 
+** Dashboard
+#+begin_src emacs-lisp
+
+  (use-package dashboard
+    :ensure t 
+    :init
+    (setq initial-buffer-choice 'dashboard-open)
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+    (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+    (setq dashboard-center-content t)
+    (setq dashboard-items '((recents . 5)
+                            (agenda . 5 )
+                            (bookmarks . 3)
+                            (projects . 3)
+                            (registers . 3)))
+    :custom 
+    (dashboard-modify-heading-icons '((recents . "file-text")
+  				      (bookmarks . "book")))
+    :config
+    (dashboard-setup-startup-hook))
+
+#+end_src
 * Org
 #+begin_src emacs-lisp
 
@@ -122,8 +136,21 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 ** Babel Languages
 #+begin_src emacs-lisp
 
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (use-package org-tempo
+    :ensure nil
+    :demand t
+    :config
+    (dolist (item '(("sh" . "src sh")
+                    ("el" . "src emacs-lisp")
+                    ("li" . "src lisp")
+                    ("sc" . "src scheme")
+                    ("ts" . "src typescript")
+                    ("py" . "src python")
+                    ("yaml" . "src yaml")
+                    ("json" . "src json")
+                    ("einit" . "src emacs-lisp :tangle emacs/init.el")
+                    ("emodule" . "src emacs-lisp :tangle emacs/modules/dw-MODULE.el")))
+      (add-to-list 'org-structure-template-alist item)))
 
 #+end_src
 
@@ -133,6 +160,12 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
   (add-hook 'org-mode-hook 'org-indent-mode)
   (use-package org-bullets)
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+;; (use-package org-bullets
+;;   :after org
+;;   :hook (org-mode . org-bullets-mode)
+;;   :custom
+;;   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 #+end_src
 
@@ -156,6 +189,26 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 
 #+end_src
 
+* LSP
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    :config
+    (lsp-enable-which-key-integration t))
+
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode))
+#+end_src
+** Typescript
+#+begin_src emacs-lisp
+  (use-package typescript-mode
+    :mode "\\.ts\\'"
+    :hook (typescript-mode . lsp-deferred)
+    :config
+    (setq typescript-indent-level 2))
+#+end_src
 * Ivy
 #+begin_src emacs-lisp
 
@@ -263,8 +316,8 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 * Magit
 #+begin_src emacs-lisp
 
-  (use-package magit)
-    ;; :custom
-    ;; (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+  (use-package magit
+     :custom
+     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 #+end_src
