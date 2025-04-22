@@ -1,3 +1,98 @@
+;; Core settings
+(setq ;; Yes, this is Emacs
+      inhibit-startup-message t
+
+      ;; Make it easy to cycle through previous items in the mark ring
+      set-mark-command-repeat-pop t
+
+      ;; Prevents start at text mode and load some other packages
+      initial-major-mode 'fundamental-mode
+
+      ;; Don't warn on large files
+      large-file-warning-threshold nil
+
+      ;; Follow symlinks to VC-controlled files without warning
+      vc-follow-symlinks t
+
+      ;; Don't warn on advice
+      ad-redefinition-action 'accept
+
+      ;; Revert Dired and other buffers
+      global-auto-revert-non-file-buffers t
+
+      ;; Silence compiler warnings as they can be pretty disruptive
+      native-comp-async-report-warnings-errors nil)
+
+;; Core modes
+(repeat-mode 1)                ;; Enable repeating key maps
+(menu-bar-mode 0)              ;; Hide the menu bar
+(tool-bar-mode 0)              ;; Hide the tool bar
+(savehist-mode 1)              ;; Save minibuffer history
+(scroll-bar-mode 0)            ;; Hide the scroll bar
+(xterm-mouse-mode 1)           ;; Enable mouse events in terminal Emacs
+(display-time-mode 1)          ;; Display time in mode line / tab bar
+(fido-vertical-mode 1)         ;; Improved vertical minibuffer completions
+(column-number-mode 1)         ;; Show column number on mode line
+(tab-bar-history-mode 1)       ;; Remember previous tab window configurations
+(auto-save-visited-mode 1)     ;; Auto-save files at an interval
+(global-visual-line-mode 1)    ;; Visually wrap long lines in all buffers
+(global-auto-revert-mode 1)    ;; Refresh buffers with changed local files
+
+;; Tabs to spaces
+(setq-default indent-tabs-mode nil tab-width 2)
+
+(delete-selection-mode 1)    ;; You can select text and delete it by typing.
+(electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
+
+(electric-pair-mode 1)       ;; Turns on automatic parens pairing
+;; The following prevents <> from auto-pairing when electric-pair-mode is on.
+;; Otherwise, org-tempo is broken when you try to <s TAB...
+(add-hook 'org-mode-hook (lambda ()
+           (setq-local electric-pair-inhibit-predicate
+                   `(lambda (c)
+                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+
+(setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
+
+;; Display line numbers in programming modes
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(setq display-line-numbers-mode 'relative)
+
+;; Make icomplete slightly more convenient
+(keymap-set icomplete-fido-mode-map "M-h" 'icomplete-fido-backward-updir)
+(keymap-set icomplete-fido-mode-map "TAB" 'icomplete-force-complete)
+
+;; Delete trailing whitespace before saving buffers
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+
+;; Match completion substrings that may be out of order
+(defun dw/override-fido-completion-styles ()
+  (setq-local completion-styles '(basic substring partial-completion emacs22)))
+(add-hook 'icomplete-minibuffer-setup-hook 'dw/override-fido-completion-styles)
+
+(setopt completions-detailed t
+        completions-format 'vertical
+        completion-auto-select t)
+
+(setopt tab-always-indent 'complete
+        completion-styles '(basic partial-completion substring flex)
+        completion-ignore-case t
+        read-buffer-completion-ignore-case t
+        read-file-name-completion-ignore-case t
+        completion-flex-nospace t
+        completion-show-help nil
+        completions-detailed t
+        completions-group t
+        completion-auto-help 'visible
+        completion-auto-select 'second-tab
+        completions-header-format nil
+        completions-format 'vertical  ;'one-column
+        completions-max-height 10)
+
+(keymap-set minibuffer-local-map "C-p" #'minibuffer-previous-completion)
+(keymap-set minibuffer-local-map "C-n" #'minibuffer-next-completion)
+
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
 			 ("org" . "https://orgmode.org/elpa/")
@@ -7,21 +102,27 @@
   (package-refresh-contents))
 
 ;; Init use-package on non-linux platforms
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
+;;(unless (package-installed-p 'use-package)
+;;  (package-install 'use-package))
 
 (require 'use-package)
 (setq use-package-always-ensure t)
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
+;; dont backup files opened by sudo or doas
+(setq backup-enable-predicate
+      (lambda (name)
+        (and (normal-backup-enable-predicate name)
+             (not
+              (let ((method (file-remote-p name 'method)))
+                (when (stringp method)
+                  (member method '("su" "sudo" "doas"))))))))
 
 (tooltip-mode -1)
 ;; padding
 (set-fringe-mode 10)
 
 (add-to-list 'default-frame-alist '(alpha-background . 90))
-
-;;(column-number-mode)
 
 (use-package which-key
   :init (which-key-mode)
@@ -32,7 +133,8 @@
 (use-package doom-themes
   :init (load-theme 'doom-tokyo-night t))
 
-(set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 240)
+(add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-20"))
+(setq frame-inhibit-implied-resize t)
 
 (use-package dashboard
   :ensure t
@@ -103,7 +205,6 @@
 
   (use-package org-tempo
     :ensure nil
-    :demand t  ;; load at startup
     :config
     (dolist (item '(("sh" . "src sh")
                     ("el" . "src emacs-lisp")
@@ -117,7 +218,7 @@
                     ("emodule" . "src emacs-lisp :tangle emacs/modules/dw-MODULE.el")))
       (add-to-list 'org-structure-template-alist item)))
 
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
 
 (setq org-clock-sound "~/Music/sfx/bell-notification.wav")
 
@@ -205,111 +306,22 @@
   (evil-collection-init))
 
 (use-package project
-    ;; :bind (
-    ;;     ("C-f" . project-switch-project))
+     :bind (
+         ("C-c f" . project-switch-project))
 )
 ;; try to bind C-f to project-switch-project
 ;; try to create harpoon with project
 
 (use-package magit
-   :custom
-   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
-
-;; Core settings
-(setq ;; Yes, this is Emacs
-      inhibit-startup-message t
-
-      ;; Make it easy to cycle through previous items in the mark ring
-      set-mark-command-repeat-pop t
-
-      ;; Don't warn on large files
-      large-file-warning-threshold nil
-
-      ;; Follow symlinks to VC-controlled files without warning
-      vc-follow-symlinks t
-
-      ;; Don't warn on advice
-      ad-redefinition-action 'accept
-
-      ;; Revert Dired and other buffers
-      global-auto-revert-non-file-buffers t
-
-      ;; Silence compiler warnings as they can be pretty disruptive
-      native-comp-async-report-warnings-errors nil)
-
-;; Core modes
-(repeat-mode 1)                ;; Enable repeating key maps
-(menu-bar-mode 0)              ;; Hide the menu bar
-(tool-bar-mode 0)              ;; Hide the tool bar
-(savehist-mode 1)              ;; Save minibuffer history
-(scroll-bar-mode 0)            ;; Hide the scroll bar
-(xterm-mouse-mode 1)           ;; Enable mouse events in terminal Emacs
-(display-time-mode 1)          ;; Display time in mode line / tab bar
-(fido-vertical-mode 1)         ;; Improved vertical minibuffer completions
-(column-number-mode 1)         ;; Show column number on mode line
-(tab-bar-history-mode 1)       ;; Remember previous tab window configurations
-(auto-save-visited-mode 1)     ;; Auto-save files at an interval
-(global-visual-line-mode 1)    ;; Visually wrap long lines in all buffers
-(global-auto-revert-mode 1)    ;; Refresh buffers with changed local files
-
-;; Tabs to spaces
-(setq-default indent-tabs-mode nil tab-width 2)
-
-(delete-selection-mode 1)    ;; You can select text and delete it by typing.
-(electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
-
-(electric-pair-mode 1)       ;; Turns on automatic parens pairing
-;; The following prevents <> from auto-pairing when electric-pair-mode is on.
-;; Otherwise, org-tempo is broken when you try to <s TAB...
-(add-hook 'org-mode-hook (lambda ()
-           (setq-local electric-pair-inhibit-predicate
-                   `(lambda (c)
-                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
-
-(setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
-
-;; Display line numbers in programming modes
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
-(setq display-line-numbers-mode 'relative)
-
-;; Make icomplete slightly more convenient
-(keymap-set icomplete-fido-mode-map "M-h" 'icomplete-fido-backward-updir)
-(keymap-set icomplete-fido-mode-map "TAB" 'icomplete-force-complete)
-
-;; Delete trailing whitespace before saving buffers
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-
-
-;; Match completion substrings that may be out of order
-(defun dw/override-fido-completion-styles ()
-  (setq-local completion-styles '(basic substring partial-completion emacs22)))
-(add-hook 'icomplete-minibuffer-setup-hook 'dw/override-fido-completion-styles)
-
-(setopt completions-detailed t
-        completions-format 'vertical
-        completion-auto-select t)
-
-(setopt tab-always-indent 'complete
-        completion-styles '(basic partial-completion substring flex)
-        completion-ignore-case t
-        read-buffer-completion-ignore-case t
-        read-file-name-completion-ignore-case t
-        completion-flex-nospace t
-        completion-show-help nil
-        completions-detailed t
-        completions-group t
-        completion-auto-help 'visible
-        completion-auto-select 'second-tab
-        completions-header-format nil
-        completions-format 'vertical  ;'one-column
-        completions-max-height 10)
-
-(keymap-set minibuffer-local-map "C-p" #'minibuffer-previous-completion)
-(keymap-set minibuffer-local-map "C-n" #'minibuffer-next-completion)
+  :defer 10
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 ;; Make sure ripgrep is used everywhere
 (setq xref-search-program 'ripgrep
       grep-command "rg -nS --noheading")
+
+;;(setq use-package-verbose t)
 
 (defun efs/display-startup-time ()
    (message "Emacs loaded in %s with %d garbage collections and %d features loaded."
@@ -318,4 +330,4 @@
                       (time-subtract after-init-time before-init-time)))
             gcs-done (length features)))
 
-(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+;;(add-hook 'emacs-startup-hook #'efs/display-startup-time)
