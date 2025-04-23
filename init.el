@@ -110,8 +110,8 @@
 
 ;; debug packages load time, defer, etc
 ;; use `use-package-report` to see the report
-(setq use-package-compute-statistics t)
-(setq use-package-minimum-reported-time 0.01)
+;;(setq use-package-compute-statistics t)
+;;(setq use-package-minimum-reported-time 0.01)
 
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 ;; dont backup files opened by sudo or doas
@@ -261,7 +261,8 @@
   (setq lsp-keymap-prefix "C-c l")
   :config
   (lsp-enable-which-key-integration t)
-  :bind (("C-h" . lsp-ui-doc-glance)
+  :bind (:map lsp-mode-map
+      ("C-h" . lsp-ui-doc-glance)
       ("TAB" . completion-at-point)
       ("C-SPC" . completion-at-point))
 )
@@ -332,6 +333,71 @@
   :commands (magit)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+(defface siren-tab-bar-tab
+`((t :inherit 'tab-bar-tab
+        :foreground ,(face-attribute 'font-lock-keyword-face :foreground nil t)))
+"Face for active tab in tab-bar."
+:group 'siren-tab-bar)
+
+(defface siren-tab-bar-tab-hint
+`((t :inherit 'siren-tab-bar-tab
+        :foreground ,(face-attribute 'tab-bar-tab-inactive :foreground nil t)))
+"Face for active tab hint in tab-bar."
+:group 'siren-tab-bar)
+
+(defface siren-tab-bar-tab-inactive
+`((t :inherit 'tab-bar-tab-inactive
+        :foreground ,(face-attribute 'font-lock-comment-face :foreground nil t)))
+"Face for inactive tab in tab-bar."
+:group 'siren-tab-bar)
+
+(defface siren-tab-bar-tab-hint-inactive
+`((t :inherit 'siren-tab-bar-tab-inactive
+        :foreground ,(face-attribute 'tab-bar-tab-inactive :foreground nil t)))
+"Face for inactive tab hint in tab-bar."
+:group 'siren-tab-bar)
+
+(defun siren-tab-bar-tab-name-format-default (tab i)
+(let* ((current-p (eq (car tab) 'current-tab))
+        (tab-face (if current-p
+                        'siren-tab-bar-tab
+                    'siren-tab-bar-tab-inactive))
+        (hint-face (if current-p
+                        'siren-tab-bar-tab-hint
+                    'siren-tab-bar-tab-hint-inactive)))
+    (concat (propertize (if tab-bar-tab-hints (format "  %d:" (- i 1)) "  ")
+                        'face hint-face)
+            (propertize
+            (concat
+            (alist-get 'name tab)
+            (or (and tab-bar-close-button-show
+                        (not (eq tab-bar-close-button-show
+                                (if current-p 'non-selected 'selected)))
+                        tab-bar-close-button)
+                "")
+            "  ")
+            'face tab-face))))
+
+(use-package tab-bar
+  :custom
+    (tab-bar-close-button-show nil)
+    (tab-bar-new-button-show nil)
+    (tab-bar-history-limit 25)
+    (tab-bar-new-tab-choice "*scratch*")
+    (tab-bar-show 1)
+    (tab-bar-tab-hints t)
+    (tab-bar-format `(tab-bar-format-tabs-groups
+                    ,(if (eq system-type 'darwin)
+                         'tab-bar-notch-spacer
+                       'tab-bar-separator)))
+    (tab-bar-tab-name-format-function #'siren-tab-bar-tab-name-format-default)
+  :bind (
+    ("C-c c" . tab-bar-new-tab)
+    ("C-c x" . tab-bar-close-tab)
+    ("C-c n" . tab-bar-switch-to-next-tab)
+    ("C-c p" . tab-bar-switch-to-prev-tab)
+  ))
 
 ;; Make sure ripgrep is used everywhere
 (setq xref-search-program 'ripgrep
