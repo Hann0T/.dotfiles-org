@@ -108,6 +108,11 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+;; debug packages load time, defer, etc
+;; use `use-package-report` to see the report
+(setq use-package-compute-statistics t)
+(setq use-package-minimum-reported-time 0.01)
+
 (setq backup-directory-alist '((".*" . "~/.local/share/Trash/files")))
 ;; dont backup files opened by sudo or doas
 (setq backup-enable-predicate
@@ -129,6 +134,12 @@
   :diminish which-key-mode
   :config
   (setq which-key-idle-delay 0.3))
+
+
+;; defer the doom theme
+;; is not that useful because it loads right after the startup and looks weird
+;;(add-hook 'emacs-startup-hook
+;;          (lambda () (load-theme 'doom-tokyo-night t)))
 
 (use-package doom-themes
   :init (load-theme 'doom-tokyo-night t))
@@ -178,7 +189,9 @@
               mode-line-buffer-identification '(" %b")
               mode-line-position-column-line-format '(" %l:%c"))
 
-(use-package org)
+(use-package org
+  :mode ("\\.org\\'" . org-mode)
+  :commands (org-mode))
 (setq org-ellipsis " ▾"
       org-startup-folded 'content
       org-cycle-separator-lines 2
@@ -198,13 +211,15 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
 ;; get tangled
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (shell . t)))
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+      'org-babel-load-languages
+      '((emacs-lisp . t)
+      (python . t))))
 
   (use-package org-tempo
     :ensure nil
+    :after org
     :config
     (dolist (item '(("sh" . "src sh")
                     ("el" . "src emacs-lisp")
@@ -313,15 +328,14 @@
 ;; try to create harpoon with project
 
 (use-package magit
-  :defer 10
+  :bind (("C-c g" . magit))
+  :commands (magit)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 ;; Make sure ripgrep is used everywhere
 (setq xref-search-program 'ripgrep
       grep-command "rg -nS --noheading")
-
-;;(setq use-package-verbose t)
 
 (defun efs/display-startup-time ()
    (message "Emacs loaded in %s with %d garbage collections and %d features loaded."

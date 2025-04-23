@@ -103,20 +103,25 @@
 * Package System Setup
 #+begin_src emacs-lisp
 
-  (require 'package)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-  			 ("org" . "https://orgmode.org/elpa/")
-  			 ("elpa" ."https://elpa.gnu.org/packages/")))
-  (package-initialize)
-  (unless package-archive-contents
-    (package-refresh-contents))
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("org" . "https://orgmode.org/elpa/")
+			 ("elpa" ."https://elpa.gnu.org/packages/")))
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
 
-  ;; Init use-package on non-linux platforms
-  ;;(unless (package-installed-p 'use-package)
-  ;;  (package-install 'use-package))
+;; Init use-package on non-linux platforms
+;;(unless (package-installed-p 'use-package)
+;;  (package-install 'use-package))
 
-  (require 'use-package)
-  (setq use-package-always-ensure t)
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;; debug packages load time, defer, etc
+;; use `use-package-report` to see the report
+(setq use-package-compute-statistics t)
+(setq use-package-minimum-reported-time 0.01)
 
 #+end_src
 
@@ -153,6 +158,12 @@ the TRASH directory.
   :diminish which-key-mode
   :config
   (setq which-key-idle-delay 0.3))
+
+
+;; defer the doom theme
+;; is not that useful because it loads right after the startup and looks weird
+;;(add-hook 'emacs-startup-hook
+;;          (lambda () (load-theme 'doom-tokyo-night t)))
 
 (use-package doom-themes
   :init (load-theme 'doom-tokyo-night t))
@@ -219,7 +230,9 @@ the TRASH directory.
 * Org
 #+begin_src emacs-lisp
 
-(use-package org)
+(use-package org
+  :mode ("\\.org\\'" . org-mode)
+  :commands (org-mode))
 (setq org-ellipsis " ▾"
       org-startup-folded 'content
       org-cycle-separator-lines 2
@@ -249,13 +262,15 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 ** Babel Languages
 #+begin_src emacs-lisp
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((emacs-lisp . t)
-   (shell . t)))
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+      'org-babel-load-languages
+      '((emacs-lisp . t)
+      (python . t))))
 
   (use-package org-tempo
     :ensure nil
+    :after org
     :config
     (dolist (item '(("sh" . "src sh")
                     ("el" . "src emacs-lisp")
@@ -403,7 +418,8 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#
 #+begin_src emacs-lisp
 
 (use-package magit
-  :defer 10
+  :bind (("C-c g" . magit))
+  :commands (magit)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
@@ -418,10 +434,6 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#
 
 #+end_src
 * Debugging
-** Use Package
-#+begin_src emacs-lisp
-;;(setq use-package-verbose t)
-#+end_src
 ** Startup Time Count
 #+begin_src emacs-lisp
 (defun efs/display-startup-time ()
