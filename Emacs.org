@@ -346,6 +346,9 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#
 ;; lsp and tsserver was making the jit-lock-function pretty slow
 ;; https://www.reddit.com/r/emacs/comments/1bwe92d/comment/ky5jk31/
 (setq font-lock-maximum-decoration 2)
+
+;; remove the auto shit|imports? the thing that mess up my imports in tsserver
+
 #+end_src
 ** Typescript
 #+begin_src emacs-lisp
@@ -414,8 +417,30 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#
      :bind (
          ("C-c f" . project-switch-project))
 )
-;; try to bind C-f to project-switch-project
-;; try to create harpoon with project
+
+#+end_src
+** Harpoon
+#+begin_src emacs-lisp
+
+;;(defun my/project-switched-advice (&rest _)
+;;  (message "Switched to project: %s" (project-root (project-current t)))
+;;  ;; Put your custom logic here
+;;)
+
+;; (advice-add 'project-switch-project :after #'my/project-switched-advice)
+
+#+end_src
+** Workflow automation
+- [ ] auto creation of tabs (code, vterm, idk, etc)
+- [ ] set the directory so vterm knows where to open
+#+begin_src emacs-lisp
+
+;;(defun my/project-switched-advice (&rest _)
+  ;;(message "Switched to project: %s" (project-root (project-current t)))
+  ;;;; Put your custom logic here
+;;)
+
+;; (advice-add 'project-switch-project :after #'my/project-switched-advice)
 
 #+end_src
 * Magit

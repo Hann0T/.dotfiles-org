@@ -277,6 +277,8 @@
 ;; https://www.reddit.com/r/emacs/comments/1bwe92d/comment/ky5jk31/
 (setq font-lock-maximum-decoration 2)
 
+;; remove the auto shit|imports? the thing that mess up my imports in tsserver
+
 (use-package typescript-mode
   :mode "\\.ts\\'"
   :hook (typescript-mode . lsp-deferred)
@@ -328,8 +330,20 @@
      :bind (
          ("C-c f" . project-switch-project))
 )
-;; try to bind C-f to project-switch-project
-;; try to create harpoon with project
+
+;;(defun my/project-switched-advice (&rest _)
+;;  (message "Switched to project: %s" (project-root (project-current t)))
+;;  ;; Put your custom logic here
+;;)
+
+;; (advice-add 'project-switch-project :after #'my/project-switched-advice)
+
+;;(defun my/project-switched-advice (&rest _)
+  ;;(message "Switched to project: %s" (project-root (project-current t)))
+  ;;;; Put your custom logic here
+;;)
+
+;; (advice-add 'project-switch-project :after #'my/project-switched-advice)
 
 (use-package magit
   :bind (("C-c g" . magit))
