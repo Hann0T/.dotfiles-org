@@ -126,6 +126,11 @@
                 (when (stringp method)
                   (member method '("su" "sudo" "doas"))))))))
 
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
 (tooltip-mode -1)
 ;; padding
 (set-fringe-mode 10)
@@ -303,28 +308,28 @@
         dired-kill-when-opening-new-dired-buffer t
         delete-by-moving-to-trash t))
 
-(use-package evil
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump nil)
-  :config
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  (evil-set-undo-system 'undo-redo)
+;;(use-package evil
+;;  :init
+;;  (setq evil-want-integration t)
+;;  (setq evil-want-keybinding nil)
+;;  (setq evil-want-C-u-scroll t)
+;;  (setq evil-want-C-i-jump nil)
+;;  :config
+;;  (evil-mode 1)
+;;  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+;;  (evil-set-undo-system 'undo-redo)
 
-  ;; Use visual line motions even outside of visual-line-mode buffers
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+;;  ;; Use visual line motions even outside of visual-line-mode buffers
+;;  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+;;  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+;;  (evil-set-initial-state 'messages-buffer-mode 'normal)
+;;  (evil-set-initial-state 'dashboard-mode 'normal))
 
-(use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
+;;(use-package evil-collection
+;;  :after evil
+;;  :config
+;;  (evil-collection-init))
 
 (use-package project
      :bind (
@@ -432,10 +437,10 @@
    '("'" . repeat)
    '("<escape>" . ignore)))
 
-;; (use-package meow
-;;   :demand t)
-;; (meow-setup)
-;; (meow-global-mode 1)
+ (use-package meow
+   :demand t)
+ (meow-setup)
+ (meow-global-mode 1)
 
 (defface siren-tab-bar-tab
 `((t :inherit 'tab-bar-tab

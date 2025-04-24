@@ -147,6 +147,13 @@ the TRASH directory.
 
 #+end_src
 
+* Autosave
+#+begin_src emacs-lisp
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+#+end_src
 * Basic UI Configuration
 #+begin_src emacs-lisp
 
@@ -385,28 +392,28 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#
 * Evil
 #+begin_src emacs-lisp
 
-  (use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump nil)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-    (evil-set-undo-system 'undo-redo)
+  ;;(use-package evil
+  ;;  :init
+  ;;  (setq evil-want-integration t)
+  ;;  (setq evil-want-keybinding nil)
+  ;;  (setq evil-want-C-u-scroll t)
+  ;;  (setq evil-want-C-i-jump nil)
+  ;;  :config
+  ;;  (evil-mode 1)
+  ;;  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  ;;  (evil-set-undo-system 'undo-redo)
 
-    ;; Use visual line motions even outside of visual-line-mode buffers
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  ;;  ;; Use visual line motions even outside of visual-line-mode buffers
+  ;;  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  ;;  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
+  ;;  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  ;;  (evil-set-initial-state 'dashboard-mode 'normal))
 
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
+  ;;(use-package evil-collection
+  ;;  :after evil
+  ;;  :config
+  ;;  (evil-collection-init))
 
 #+end_src
 
@@ -538,10 +545,10 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Creating-Keymaps.html#
    '("'" . repeat)
    '("<escape>" . ignore)))
 
-;; (use-package meow
-;;   :demand t)
-;; (meow-setup)
-;; (meow-global-mode 1)
+ (use-package meow
+   :demand t)
+ (meow-setup)
+ (meow-global-mode 1)
 
 #+end_src
 * Tab bar
