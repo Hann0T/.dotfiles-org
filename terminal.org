@@ -1,0 +1,183 @@
+#+titl Some useful terminal configurations
+
+* alacritty
+#+begin_src conf :tangle ~/.config/alacritty/alacritty.toml :mkdirp yes
+
+[colors]
+draw_bold_text_with_bright_colors = false
+
+[colors.bright]
+black = "#5B6268"
+blue = "#51afef"
+cyan = "#46D9FF"
+green = "#98be65"
+magenta = "#a9a1e1"
+red = "#ff6c6b"
+white = "#f8f8f2"
+yellow = "#ECBE7B"
+
+[colors.cursor]
+cursor = "#4CA6E3"
+text = "#BABABA"
+
+[colors.normal]
+black = "#3E4556"
+blue = "#4CA6E3"
+cyan = "#3FC3E5"
+green = "#88AB5A"
+magenta = "#c678dd"
+red = "#E56160"
+white = "#DFDFD9"
+yellow = "#D4AB6E"
+
+[colors.primary]
+#background = "#1A1B26"
+background = "#000000"
+foreground = "#bbc2cf"
+
+[cursor]
+style = "Block"
+unfocused_hollow = true
+
+[debug]
+log_level = "OFF"
+persistent_logging = false
+print_events = false
+render_timer = false
+
+[font]
+size = 18.0
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
+
+[font.glyph_offset]
+x = 0
+y = 0
+
+[font.italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
+[font.offset]
+x = 0
+y = 0
+
+[window]
+decorations = "full"
+dynamic_padding = false
+startup_mode = "Windowed"
+opacity = 0.9
+
+[window.dimensions]
+columns = 120
+lines = 30
+
+[window.padding]
+x = 5
+y = 0
+
+[[keyboard.bindings]]
+action = "IncreaseFontSize"
+key = "Equals"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "DecreaseFontSize"
+key = "Minus"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "ResetFontSize"
+key = "Minus"
+mods = "Control|Alt"
+
+[[keyboard.bindings]]
+action = "ScrollPageUp"
+key = "PageUp"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "ScrollPageDown"
+key = "PageDown"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "ScrollToBottom"
+key = "End"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "ScrollToTop"
+key = "Home"
+mods = "Control"
+
+[mouse]
+hide_when_typing = true
+
+[[mouse.bindings]]
+action = "PasteSelection"
+mouse = "Middle"
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+[selection]
+save_to_clipboard = false
+semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+
+[general]
+live_config_reload = true
+
+#+end_src
+
+* Git
+#+begin_src config :tangle ~/.gitconfig :mkdirp yes
+
+[init]
+	defaultBranch = main
+[user]
+	email = hansolivas1@gmail.com
+	name = hann0t
+[core]
+	editor = nvim
+[pull]
+	rebase = true
+
+#+end_src
+* Tmux
+#+begin_src config :tangle ~/.tmux.conf :mkdirp yes
+
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+set -g base-index 1
+
+setw -g mode-keys vi
+
+set-option -g default-terminal screen-256color
+
+bind-key k select-pane -U
+bind-key j select-pane -D
+bind-key h select-pane -L
+bind-key l select-pane -R
+
+set -g status-style 'bg=default fg=#bbc2e0'
+
+set-window-option -g mode-keys vi
+set-window-option -g window-status-current-style 'bg=default fg=blue'
+
+set -g pane-border-style 'fg=#222222'
+set -g pane-active-border-style 'fg=#222222'
+
+
+# overwrite find window
+bind-key -r f run-shell "tmux neww '~/.local/bin/tmuxer sessionizer'"
+
+#+end_src
