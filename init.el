@@ -263,7 +263,10 @@
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
-  (lsp-enable-which-key-integration t)
+  (setq lsp-apply-edits-after-file-operations nil
+        lsp-format-buffer-on-save t
+        lsp-enable-which-key-integration t
+  )
   :bind (:map lsp-mode-map
       ("C-h" . lsp-ui-doc-glance)
       ("TAB" . completion-at-point)
