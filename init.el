@@ -245,23 +245,18 @@
 
 (setq org-clock-sound "~/Music/sfx/bell-notification.wav")
 
-(use-package general
-  :config
-  (general-create-definer hann0t/leader-keys
-    :keymaps '(normal)
-    :prefix "SPC"
-    :global-prefix "SPC")
+(define-prefix-command 'hann0t-map)
+(global-set-key (kbd "C-c") 'hann0t-map)
 
-  (hann0t/leader-keys
-    "SPC"  '(project-find-file :which-key "telescope")
-    ","  '(switch-to-buffer :which-key "switch to buffer")
-    "b"  '(ibuffer :which-key "list buffers")
-    "."  '(find-file :which-key "find file")
-    "rn"  '(lsp-rename :which-key "lsp rename")
-    "rr"  '(lsp-find-references :which-key "lsp find references")
-    "gg"  '(magit :which-key "magit")
-    "ps"  '(project-find-regexp :which-key "project find regex")
-    "tt" '(org-timer-set-timer :which-key "set timer")))
+(keymap-set hann0t-map "SPC" #'project-find-file)
+(keymap-set hann0t-map "," #'switch-to-buffer)
+(keymap-set hann0t-map "b" #'ibuffer)
+(keymap-set hann0t-map "." #'find-file)
+(keymap-set hann0t-map "r n" #'lsp-rename)
+(keymap-set hann0t-map "r r" #'lsp-find-references)
+(keymap-set hann0t-map "g d" #'lsp-find-definition)
+(keymap-set hann0t-map "p s" #'project-find-regexp)
+(keymap-set hann0t-map "t t" #'org-timer-set-timer)
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
@@ -351,7 +346,7 @@
 ;; (advice-add 'project-switch-project :after #'my/project-switched-advice)
 
 (use-package magit
-  :bind (("C-c g" . magit))
+  :bind (("C-c g g" . magit))
   :commands (magit)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
