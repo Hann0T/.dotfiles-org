@@ -323,6 +323,12 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (keymap-set hann0t-map "g d" #'lsp-find-definition)
 (keymap-set hann0t-map "p s" #'project-find-regexp)
 (keymap-set hann0t-map "t t" #'org-timer-set-timer)
+(keymap-set hann0t-map "a" #'harpoon/add-file)
+(keymap-set hann0t-map "h" (lambda () (interactive) (harpoon/switch-to-file 0)))
+(keymap-set hann0t-map "t" (lambda () (interactive) (harpoon/switch-to-file 1)))
+(keymap-set hann0t-map "n" (lambda () (interactive) (harpoon/switch-to-file 2)))
+(keymap-set hann0t-map "s" (lambda () (interactive) (harpoon/switch-to-file 3)))
+
 
 #+end_src
 
@@ -432,6 +438,40 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 
 ;; (advice-add 'project-switch-project :after #'my/project-switched-advice)
 
+(defun harpoon/add-file ()
+  (interactive)
+  (let (
+        (file buffer-file-name)
+        (harpoon-buffer (get-buffer-create "harpoon"))
+    )
+   (when file
+      (with-current-buffer harpoon-buffer
+        (goto-char (point-max)) ; move to the end
+        (insert (concat file "\n"))
+      (message "File added to harpoon")))))
+
+(defun harpoon/read-lines ()
+  (interactive)
+  (let ((harpoon-buffer (get-buffer "harpoon"))
+        (lines '()))
+    (when harpoon-buffer
+      (with-current-buffer harpoon-buffer
+        (goto-char (point-min))
+        (while (not (eobp))
+          (let ((line (string-trim (buffer-substring-no-properties
+                                    (line-beginning-position)
+                                    (line-end-position)))))
+            (when (not (string-empty-p line))
+              (push line lines))
+          (forward-line 1))))
+    (nreverse lines))))
+
+(defun harpoon/switch-to-file (index)
+  (interactive "nHarpoon file index: ")
+  (let ((files (harpoon/read-lines)))
+    (if (and (>= index 0) (< index (length files)))
+        (find-file (nth index files))
+      (message "Invalid index: %d" index))))
 #+end_src
 ** Workflow automation
 - [ ] auto creation of tabs (code, vterm, idk, etc)
