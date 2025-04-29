@@ -1,5 +1,5 @@
 #+title Emacs Configuration
-#+PROPERTY: header-args:emacs-lisp :tangle ./init.el
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp true
 
 * Core Settings
 #+begin_src emacs-lisp
@@ -101,6 +101,10 @@
 
 (keymap-set minibuffer-local-map "C-p" #'minibuffer-previous-completion)
 (keymap-set minibuffer-local-map "C-n" #'minibuffer-next-completion)
+
+;; Fullscreen
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 #+end_src
 
 * Package System Setup
@@ -324,10 +328,10 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (keymap-set hann0t-map "p s" #'project-find-regexp)
 (keymap-set hann0t-map "t t" #'org-timer-set-timer)
 (keymap-set hann0t-map "a" #'harpoon/add-file)
-(keymap-set hann0t-map "h" (lambda () (interactive) (harpoon/switch-to-file 0)))
-(keymap-set hann0t-map "t" (lambda () (interactive) (harpoon/switch-to-file 1)))
-(keymap-set hann0t-map "n" (lambda () (interactive) (harpoon/switch-to-file 2)))
-(keymap-set hann0t-map "s" (lambda () (interactive) (harpoon/switch-to-file 3)))
+(keymap-set hann0t-map "C-h" (lambda () (interactive) (harpoon/switch-to-file 0)))
+(keymap-set hann0t-map "C-t" (lambda () (interactive) (harpoon/switch-to-file 1)))
+(keymap-set hann0t-map "C-n" (lambda () (interactive) (harpoon/switch-to-file 2)))
+(keymap-set hann0t-map "C-s" (lambda () (interactive) (harpoon/switch-to-file 3)))
 
 
 #+end_src
@@ -339,14 +343,14 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
+  ;; remove the auto shit|imports? the thing that mess up my imports in tsserver
   (setq lsp-apply-edits-after-file-operations nil
         lsp-format-buffer-on-save t
         lsp-enable-which-key-integration t
   )
   :bind (:map lsp-mode-map
-      ("C-h" . lsp-ui-doc-glance)
-      ("TAB" . completion-at-point)
-      ("C-SPC" . completion-at-point))
+      ("C-h" . lsp-ui-doc-glance))
+  :hook (lsp-mode . company-mode)
 )
 
 (use-package lsp-ui
@@ -356,7 +360,13 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 ;; https://www.reddit.com/r/emacs/comments/1bwe92d/comment/ky5jk31/
 (setq font-lock-maximum-decoration 2)
 
-;; remove the auto shit|imports? the thing that mess up my imports in tsserver
+#+end_src
+** Company
+#+begin_src emacs-lisp
+
+(use-package company
+  :defer t
+  :commands company-mode)
 
 #+end_src
 ** Typescript
@@ -373,9 +383,17 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (use-package php-mode
     :mode "\\.php\\'"
     :hook (php-mode . lsp-deferred)
+    :config  (setq lsp-intelephense-multi-root nil)
 )
 
 #+end_src
+** C
+#+begin_src emacs-lisp
+
+(add-hook 'c-mode-hook 'lsp)
+
+#+end_src
+
 * Dired
 #+begin_src emacs-lisp
 (use-package dired

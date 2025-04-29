@@ -1,4 +1,4 @@
-#+titl Some useful terminal configurations
+#+title Some useful terminal configurations
 
 * alacritty
 #+begin_src conf :tangle ~/.config/alacritty/alacritty.toml :mkdirp yes
@@ -145,8 +145,6 @@ live_config_reload = true
 [user]
 	email = hansolivas1@gmail.com
 	name = hann0t
-[core]
-	editor = nvim
 [pull]
 	rebase = true
 
