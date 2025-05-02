@@ -332,15 +332,11 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (keymap-set hann0t-map "C-t" (lambda () (interactive) (harpoon/switch-to-file 1)))
 (keymap-set hann0t-map "C-n" (lambda () (interactive) (harpoon/switch-to-file 2)))
 (keymap-set hann0t-map "C-s" (lambda () (interactive) (harpoon/switch-to-file 3)))
-
-
-(define-prefix-command 'hann0t-window-map)
-(global-set-key (kbd "C-w") 'hann0t-window-map)
-(keymap-set hann0t-window-map "o" #'other-window)
-(keymap-set hann0t-window-map "q" #'delete-window)
-(keymap-set hann0t-window-map "O" #'delete-other-windows)
-(keymap-set hann0t-window-map "v" #'split-window-right)
-(keymap-set hann0t-window-map "h" #'split-window-below)
+(keymap-set hann0t-map "o" #'other-window)
+(keymap-set hann0t-map "q" #'delete-window)
+(keymap-set hann0t-map "O" #'delete-other-windows)
+(keymap-set hann0t-map "v" #'split-window-right)
+(keymap-set hann0t-map "h" #'split-window-below)
 
 #+end_src
 
