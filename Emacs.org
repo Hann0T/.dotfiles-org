@@ -334,6 +334,14 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (keymap-set hann0t-map "C-s" (lambda () (interactive) (harpoon/switch-to-file 3)))
 
 
+(define-prefix-command 'hann0t-window-map)
+(global-set-key (kbd "C-w") 'hann0t-window-map)
+(keymap-set hann0t-window-map "o" #'other-window)
+(keymap-set hann0t-window-map "q" #'delete-window)
+(keymap-set hann0t-window-map "O" #'delete-other-windows)
+(keymap-set hann0t-window-map "v" #'split-window-right)
+(keymap-set hann0t-window-map "h" #'split-window-below)
+
 #+end_src
 
 * LSP
@@ -409,34 +417,13 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
         dired-kill-when-opening-new-dired-buffer t
         delete-by-moving-to-trash t))
 #+end_src
-* Evil
+* Edit Indirect
 #+begin_src emacs-lisp
 
-  ;;(use-package evil
-  ;;  :init
-  ;;  (setq evil-want-integration t)
-  ;;  (setq evil-want-keybinding nil)
-  ;;  (setq evil-want-C-u-scroll t)
-  ;;  (setq evil-want-C-i-jump nil)
-  ;;  :config
-  ;;  (evil-mode 1)
-  ;;  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-  ;;  (evil-set-undo-system 'undo-redo)
-
-  ;;  ;; Use visual line motions even outside of visual-line-mode buffers
-  ;;  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  ;;  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-
-  ;;  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  ;;  (evil-set-initial-state 'dashboard-mode 'normal))
-
-  ;;(use-package evil-collection
-  ;;  :after evil
-  ;;  :config
-  ;;  (evil-collection-init))
+(use-package edit-indirect
+  :commands (edit-indirect-region))
 
 #+end_src
-
 * Project.el
 #+begin_src emacs-lisp
 
@@ -490,6 +477,14 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
     (if (and (>= index 0) (< index (length files)))
         (find-file (nth index files))
       (message "Invalid index: %d" index))))
+#+end_src
+** Harponee
+#+begin_src emacs-lisp
+;;(defun harponee/add-file ()
+  ;;(interactive)
+  ;;(let ((name (format "file-%d" (length bookmark-alist))))
+  ;;(bookmark-set name))
+;;)
 #+end_src
 ** Workflow automation
 - [ ] auto creation of tabs (code, vterm, idk, etc)
