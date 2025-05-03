@@ -173,9 +173,9 @@ the TRASH directory.
   :config
   (setq which-key-idle-delay 0.3))
 
-(use-package zenburn-theme
-  :config
-  (load-theme 'zenburn t))
+(use-package doom-themes
+  :ensure t
+  :config (load-theme 'doom-tokyo-night t))
 
 #+end_src
 
