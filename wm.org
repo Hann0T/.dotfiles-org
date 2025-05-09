@@ -456,7 +456,7 @@ wallpaper = DP-1,~/Pictures/wallpapers/wallhaven-7jggko_2560x1440.png
 @define-color black-transparent-9 rgba(0, 0, 0, 0.9);
 @define-color black-solid         rgba(0, 0, 0, 1.0);
 
-* {
+ * {
 	font-family: Nerd Font Hack;
     font-size: 13px;
     padding: 0;
