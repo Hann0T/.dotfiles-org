@@ -175,7 +175,7 @@ the TRASH directory.
 
 (use-package doom-themes
   :ensure t
-  :config (load-theme 'doom-tokyo-night t))
+  :config (load-theme 'doom-tomorrow-night t))
 
 #+end_src
 
@@ -258,7 +258,7 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
   ;; Automatically tangle our Emacs.org config file when we save it
   (defun efs/org-babel-tangle-config ()
     (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/.config/emacs/Emacs.org"))
+                        (expand-file-name "~/.dotfiles-org/Emacs.org"))
       ;; Dynamic scoping to the rescue
       (let ((org-confirm-babel-evaluate nil))
         (org-babel-tangle))))
@@ -317,9 +317,12 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (keymap-set hann0t-map "," #'switch-to-buffer)
 (keymap-set hann0t-map "b" #'ibuffer)
 (keymap-set hann0t-map "." #'find-file)
-(keymap-set hann0t-map "r n" #'lsp-rename)
-(keymap-set hann0t-map "r r" #'lsp-find-references)
-(keymap-set hann0t-map "g d" #'lsp-find-definition)
+(keymap-set hann0t-map "e a" #'eglot-code-actions)
+(keymap-set hann0t-map "r n" #'eglot-rename)
+(keymap-set hann0t-map "r r" #'xref-find-references)
+(keymap-set hann0t-map "g d" #'xref-find-definitions)
+(keymap-set hann0t-map "g i" #'eglot-find-implementation)
+(keymap-set hann0t-map "g t" #'eglot-find-typeDefinition)
 (keymap-set hann0t-map "p s" #'project-find-regexp)
 (keymap-set hann0t-map "t t" #'org-timer-set-timer)
 (keymap-set hann0t-map "a" #'harpoon/add-file)
@@ -334,65 +337,51 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (keymap-set hann0t-map "h" #'split-window-below)
 
 #+end_src
-
-* LSP
+* Eglot
 #+begin_src emacs-lisp
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :init
-  (setq lsp-keymap-prefix "C-c l")
+(use-package eglot
+  :commands (eglot)
+  :ensure t
+  :hook (eglot-managed-mode . company-mode)
   :config
-  ;; remove the auto shit|imports? the thing that mess up my imports in tsserver
-  (setq lsp-apply-edits-after-file-operations nil
-        lsp-format-buffer-on-save t
-        lsp-enable-which-key-integration t
-  )
-  :bind (:map lsp-mode-map
-      ("C-h" . lsp-ui-doc-glance))
-  :hook (lsp-mode . company-mode)
-)
+  (add-to-list 'eglot-server-programs
+               '(php-mode . ("phpactor" "language-server")))
+  ;;(add-to-list 'eglot-server-programs
+  ;;             '(python-mode . ("pyright-langserver" "--stdio")))
+  (add-to-list 'eglot-server-programs
+               '(js-mode . ("typescript-language-server" "--stdio")))
+  (add-to-list 'eglot-server-programs
+               '(typescript-mode . ("typescript-language-server" "--stdio"))))
 
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode))
-
-;; lsp and tsserver was making the jit-lock-function pretty slow
-;; https://www.reddit.com/r/emacs/comments/1bwe92d/comment/ky5jk31/
-(setq font-lock-maximum-decoration 2)
-
+;; confirm the changes of eglot-code-actions
+(setq eglot-confirm-server-edits 'summary)
 #+end_src
+* Languages
 ** Company
 #+begin_src emacs-lisp
-
 (use-package company
   :defer t
   :commands company-mode)
-
 #+end_src
 ** Typescript
 #+begin_src emacs-lisp
   (use-package typescript-mode
     :mode "\\.ts\\'"
-    :hook (typescript-mode . lsp-deferred)
+    :hook (php-mode . eglot-ensure)
     :config
     (setq typescript-indent-level 2))
 #+end_src
 ** Php
 #+begin_src emacs-lisp
-
 (use-package php-mode
     :mode "\\.php\\'"
-    :hook (php-mode . lsp-deferred)
-    :config  (setq lsp-intelephense-multi-root nil)
+    :hook (php-mode . eglot-ensure)
 )
-
 #+end_src
 ** C
 #+begin_src emacs-lisp
-
-(add-hook 'c-mode-hook 'lsp)
-
+(add-hook 'c-mode-hook 'eglot)
 #+end_src
-
 * Dired
 #+begin_src emacs-lisp
 (use-package dired
@@ -439,6 +428,7 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 #+end_src
 * Harpoon                                                            :ATTACH:
 #+begin_src emacs-lisp
+;; create a bookmark per project
 (defun harpoon/switch-to-n (index)
   (interactive "index: ")
   (let* ((entry (nth index bookmark-alist)))
@@ -659,6 +649,49 @@ To add:
 (use-package vterm
   :commands (vterm)
   :ensure t)
+
+#+end_src
+* Functions
+#+begin_src emacs-lisp
+
+(defun surround-region-w-tilde (beg end &optional open close)
+  "Surround the region between BEG and END with OPEN and CLOSE."
+ ;; The "r" iteractive code returns point and mark, smallest first.
+  (interactive "r")
+  (let ((open (or open "~"))
+        (close (or close "~")))
+    (save-excursion
+      (goto-char beg)
+      (insert open)
+      ;;Not brittle, IMO
+      (goto-char (+ end (length open)))
+      (insert close))))
+
+(defun surround-region-w-parentheses (beg end &optional open close)
+  "Surround the region between BEG and END with OPEN and CLOSE."
+ ;; The "r" iteractive code returns point and mark, smallest first.
+  (interactive "r")
+  (let ((open (or open "("))
+        (close (or close ")")))
+    (save-excursion
+      (goto-char beg)
+      (insert open)
+      ;;Not brittle, IMO
+      (goto-char (+ end (length open)))
+      (insert close))))
+
+(defun surround-region-w-double-quote (beg end &optional open close)
+  "Surround the region between BEG and END with OPEN and CLOSE."
+ ;; The "r" iteractive code returns point and mark, smallest first.
+  (interactive "r")
+  (let ((open (or open "\""))
+        (close (or close "\"")))
+    (save-excursion
+      (goto-char beg)
+      (insert open)
+      ;;Not brittle, IMO
+      (goto-char (+ end (length open)))
+      (insert close))))
 
 #+end_src
 * Debugging
