@@ -404,6 +404,14 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
   :commands (edit-indirect-region))
 
 #+end_src
+* eradio
+#+begin_src elisp
+(use-package eradio
+  :init (setq eradio-player '("mpv" "--no-video" "--no-terminal"))
+  :config
+  (setq eradio-channels '(("Fallout - Fallout fm" . "https://fallout.fm:8444/falloutfm1.ogg.m3u")))
+)
+#+end_src
 * Project.el
 #+begin_src emacs-lisp
 
