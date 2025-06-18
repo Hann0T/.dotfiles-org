@@ -185,6 +185,20 @@ the TRASH directory.
 (add-to-list 'default-frame-alist '(font . "JetBrainsMono Nerd Font-20"))
 (setq frame-inhibit-implied-resize t)
 
+;; (defun my-font-lock-function (start end)
+;; "Set faces for font-lock between START and END.")
+
+;; (defun my-font-lock-matcher (limit)
+;;     (my-font-lock-function (point) limit)
+;;    nil)
+
+;; (setq font-lock-defaults
+;;   (list
+;;     ;; Note that the face specified here doesn't matter since
+;;     ;; my-font-lock-matcher always returns nil and sets the face on
+;;     ;; its own.
+;;     `(my-font-lock-matcher (1 font-lock-keyword-face nil))))
+
 #+end_src
 
 ** Dashboard
@@ -366,10 +380,13 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 ** Typescript
 #+begin_src emacs-lisp
   (use-package typescript-mode
-    :mode "\\.ts\\'"
-    :hook (php-mode . eglot-ensure)
+    :mode (("\\.ts\\'" . typescript-mode)
+         ("\\.tsx\\'" . tsx-ts-mode))
+    :hook ((typescript-mode tsx-ts-mode) . eglot-ensure)
     :config
     (setq typescript-indent-level 2))
+
+(add-hook 'typescript-mode-hook (lambda () (font-lock-mode -1)))
 #+end_src
 ** Php
 #+begin_src emacs-lisp
@@ -407,9 +424,12 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 * eradio
 #+begin_src elisp
 (use-package eradio
+  :ensure t
   :init (setq eradio-player '("mpv" "--no-video" "--no-terminal"))
   :config
-  (setq eradio-channels '(("Fallout - Fallout fm" . "https://fallout.fm:8444/falloutfm1.ogg.m3u")))
+  (setq eradio-channels '(("Fallout all - Fallout fm" . "https://fallout.fm:8444/falloutfm1.ogg.m3u")
+                          ("Fallout 3 - Fallout fm" . "https://fallout.fm:8444/falloutfm2.ogg.m3u")
+                          ("Fallout NV - Fallout fm" . "https://fallout.fm:8444/falloutfm3.ogg.m3u")))
 )
 #+end_src
 * Project.el
