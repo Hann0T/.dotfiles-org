@@ -69,7 +69,7 @@
 
 ;; Make icomplete slightly more convenient
 (keymap-set icomplete-fido-mode-map "M-h" 'icomplete-fido-backward-updir)
-(keymap-set icomplete-fido-mode-map "TAB" 'icomplete-force-complete)
+;; (keymap-set icomplete-fido-mode-map "TAB" 'icomplete-force-complete)
 
 ;; Delete trailing whitespace before saving buffers
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -370,7 +370,26 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 ;; confirm the changes of eglot-code-actions
 (setq eglot-confirm-server-edits 'summary)
 #+end_src
+* Copilot
+#+begin_src emacs-lisp
+(use-package copilot
+  :vc (:url "https://github.com/copilot-emacs/copilot.el"
+            :rev :newest
+            :branch "main")
+)
+
+(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+(define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
+(add-hook 'prog-mode-hook 'copilot-mode)
+#+end_src
 * Languages
+** Treesitter
+#+begin_src emacs-lisp
+(setq treesit-language-source-alist
+  '((javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+    (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+    (tsx        . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))))
+#+end_src
 ** Company
 #+begin_src emacs-lisp
 (use-package company
@@ -379,14 +398,17 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 #+end_src
 ** Typescript
 #+begin_src emacs-lisp
-  (use-package typescript-mode
-    :mode (("\\.ts\\'" . typescript-mode)
+(use-package typescript-mode
+  :mode (("\\.ts\\'" . typescript-ts-mode)
          ("\\.tsx\\'" . tsx-ts-mode))
-    :hook ((typescript-mode tsx-ts-mode) . eglot-ensure)
-    :config
-    (setq typescript-indent-level 2))
+  :hook ((typescript-ts-mode tsx-ts-mode) . eglot-ensure)
+  :config
+  (setq typescript-indent-level 2))
 
-(add-hook 'typescript-mode-hook (lambda () (font-lock-mode -1)))
+;; Tell Emacs to remap old modes to treesit ones
+(setq major-mode-remap-alist
+      '((javascript-mode . js-ts-mode)
+        (typescript-mode . typescript-ts-mode)))
 #+end_src
 ** Php
 #+begin_src emacs-lisp
@@ -395,9 +417,30 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
     :hook (php-mode . eglot-ensure)
 )
 #+end_src
+** Go
+#+begin_src emacs-lisp
+(use-package go-mode
+    :mode "\\.go\\'"
+    :hook (go-mode-hook . eglot-ensure)
+)
+#+end_src
 ** C
 #+begin_src emacs-lisp
 (add-hook 'c-mode-hook 'eglot)
+#+end_src
+** Python
+#+begin_src emacs-lisp
+(use-package python-mode
+    :mode "\\.py\\'"
+    :hook (python-mode . eglot-ensure)
+)
+#+end_src
+** Zig
+#+begin_src emacs-lisp
+(use-package zig-mode
+    :mode "\\.zig\\'"
+    :hook (zig-mode . eglot-ensure)
+)
 #+end_src
 * Dired
 #+begin_src emacs-lisp
@@ -678,6 +721,14 @@ To add:
   :commands (vterm)
   :ensure t)
 
+#+end_src
+* Expenses
+#+begin_src emacs-lisp
+(use-package expenses
+  :ensure t)
+(setq expenses-directory "/home/hann0t/Documents/expenses")
+(setq expenses-category-list '("Clothes" "Electronics" "Entertainment" "Fee" "Food" "Gift" "Health" "Home" "Other" "Subscriptions" "Transfer" "Utilities" "Education" "Hobbies"))
+(setq expenses-currency "S/")
 #+end_src
 * Functions
 #+begin_src emacs-lisp
