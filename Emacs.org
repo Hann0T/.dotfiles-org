@@ -388,7 +388,8 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (setq treesit-language-source-alist
   '((javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
     (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-    (tsx        . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))))
+    (tsx        . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+    (go         . ("https://github.com/tree-sitter/tree-sitter-go"))))
 #+end_src
 ** Company
 #+begin_src emacs-lisp
@@ -419,10 +420,9 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 #+end_src
 ** Go
 #+begin_src emacs-lisp
-(use-package go-mode
-    :mode "\\.go\\'"
-    :hook (go-mode-hook . eglot-ensure)
-)
+(use-package go-ts-mode
+  :mode "\\.go\\'"
+  :hook (go-ts-mode . eglot-ensure))
 #+end_src
 ** C
 #+begin_src emacs-lisp
@@ -459,10 +459,12 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 #+end_src
 * Edit Indirect
 #+begin_src emacs-lisp
-
-(use-package edit-indirect
-  :commands (edit-indirect-region))
-
+(defun code/focus-region ()
+  (interactive)
+  (let ((start (region-beginning))
+        (end (region-end)))
+    (clone-indirect-buffer-other-window "*focus*" t)
+    (narrow-to-region start end)))
 #+end_src
 * eradio
 #+begin_src elisp
@@ -550,6 +552,8 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (defun meow-setup ()
   (setq meow-cheatsheet-layout meow-cheatsheet-layout-dvorak)
   (meow-leader-define-key
+   '("f" . code/focus-region)
+   '("k" . kill-buffer-and-window)
    '("1" . meow-digit-argument)
    '("2" . meow-digit-argument)
    '("3" . meow-digit-argument)
@@ -628,10 +632,10 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
    '("'" . repeat)
    '("<escape>" . ignore)))
 
- (use-package meow
-   :demand t)
- (meow-setup)
- (meow-global-mode 1)
+(use-package meow
+  :demand t)
+(meow-setup)
+(meow-global-mode 1)
 
 #+end_src
 * Tab bar
