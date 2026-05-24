@@ -327,6 +327,11 @@ To execute or export code in org-mode code blocks, you’ll need to set up org-b
 (define-prefix-command 'hann0t-map)
 (global-set-key (kbd "C-c") 'hann0t-map)
 
+(keymap-set hann0t-map "s p" #'surround-region-w-parentheses)
+(keymap-set hann0t-map "s t" #'surround-region-w-tilde)
+(keymap-set hann0t-map "s d" #'surround-region-w-double-quote)
+(keymap-set hann0t-map "e r" #'code/focus-region)
+(keymap-set hann0t-map "e k" #'kill-buffer-and-window)
 (keymap-set hann0t-map "SPC" #'project-find-file)
 (keymap-set hann0t-map "," #'switch-to-buffer)
 (keymap-set hann0t-map "b" #'ibuffer)
